@@ -28,13 +28,6 @@ function isEmpty(s) {
 function validate(title, due, position, completed) {
   const errors = [];
 
-  if (isEmpty(title)) {
-    errors.push({
-      field: 'title',
-      error: 'Verður að skilgreina title',
-    });
-  }
-
   if (!isEmpty(title)) {
     if (typeof title !== 'string' || title.length === 0) {
       errors.push({
@@ -45,7 +38,7 @@ function validate(title, due, position, completed) {
   }
 
   if (!isEmpty(due)) {
-    if (!validator.isISO8601(due)) {
+    if (!validator.isISO8601(due) && due !== '') {
       errors.push({
         field: 'due',
         error: 'Dagsetning verður að vera gild ISO 8601 dagsetning',
@@ -54,7 +47,7 @@ function validate(title, due, position, completed) {
   }
 
   if (!isEmpty(position)) {
-    if (!validator.isInt(position)) {
+    if (!validator.isInt(position) && position !== '') {
       errors.push({
         field: 'position',
         error: 'Staðsetning verður að vera heiltala stærri eða jöfn 0',
@@ -69,6 +62,24 @@ function validate(title, due, position, completed) {
         error: 'Lokið verður að vera boolean gildi',
       });
     }
+  }
+
+  return errors;
+}
+
+/**
+ * Check if title is defined
+ *
+ * @param {string} title title of the project that needs to be validated
+ */
+function validateTitle(title) {
+  const errors = [];
+
+  if (isEmpty(title)) {
+    errors.push({
+      field: 'title',
+      error: 'Verður að skilgreina title',
+    });
   }
 
   return errors;
@@ -101,6 +112,15 @@ async function getOne(id) {
  * @param {boolean} completed is the project completed or not
  */
 async function createNew(title, due, position, completed) {
+  const validationTitle = validateTitle(title);
+
+  if (validationTitle.length > 0) {
+    return {
+      success: false,
+      validation: validationTitle,
+    };
+  }
+
   const validationResult = validate(title, due, position, completed);
 
   if (validationResult.length > 0) {
@@ -156,19 +176,22 @@ async function update(id, item) {
 
   const changedColumns = [
     !isEmpty(item.title) ? 'title' : null,
-    !isEmpty(item.due) ? 'due' : null,
-    !isEmpty(item.position) ? 'position' : null,
+    !isEmpty(item.due) && item.due !== '' ? 'due' : null,
+    !isEmpty(item.position) && item.position !== '' ? 'position' : null,
     !isEmpty(item.completed) ? 'completed' : null,
   ].filter(Boolean);
 
+  console.log('dálkar: ' + changedColumns);
+
+
   const changedValues = [
     !isEmpty(item.title) ? xss(item.title) : null,
-    !isEmpty(item.due) ? xss(item.due) : null,
-    !isEmpty(item.position) ? xss(item.position) : null,
+    !isEmpty(item.due) && item.due !== '' ? xss(item.due) : null,
+    !isEmpty(item.position) && item.position !== '' ? xss(item.position) : null,
     !isEmpty(item.completed) ? xss(item.completed) : null,
   ].filter(Boolean);
 
-  console.log(changedValues);
+  console.log('values ' + changedValues);
 
   const updates = [id, ...changedValues];
 
@@ -178,12 +201,27 @@ async function update(id, item) {
   console.log(`updates: ${updates}`);
   console.log(updatedColumnsQuery);
 
+  if (item.position === '') {
+    await query(
+      `UPDATE projects
+    SET position = NULL
+    WHERE id = $1`, [id],
+    );
+  }
+
+  if (item.due === '') {
+    await query(
+      `UPDATE projects
+    SET due = NULL
+    WHERE id = $1`, [id],
+    );
+  }
+
   const q = `
     UPDATE projects
     SET ${updatedColumnsQuery.join(', ')}
     WHERE id = $1
-    RETURNING id, title, due, position, completed`;
-  console.log(q);
+    RETURNING id, title, due, position, completed, created, updated`;
 
   const updateResult = await query(q, updates);
   console.log(updateResult);
@@ -215,7 +253,7 @@ async function deleteProject(id) {
   return {
     success: true,
     notFound: false,
-    message: 'Project deleted',
+    message: 'Verkefni eytt',
   };
 }
 
