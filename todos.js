@@ -60,6 +60,40 @@ function validate(title, due, position, completed) {
   return errors;
 }
 
+function validateNew(title, due, position, completed) {
+  const errors = [];
+
+  if (isEmpty(title)) {
+    errors.push({
+      field: 'title',
+      error: 'Verður að skilgreina title',
+    });
+  }
+
+  if (isEmpty(due)) {
+    errors.push({
+      field: 'due',
+      error: 'Verður að skilgreina dagsetningu',
+    });
+  }
+
+  if (isEmpty(position)) {
+    errors.push({
+      field: 'position',
+      error: 'Verður að skilgreina staðsetningu',
+    });
+  }
+
+  if (isEmpty(completed)) {
+    errors.push({
+      field: 'completed',
+      error: 'Verður að skilgreina stöðu',
+    });
+  }
+
+  return errors;
+}
+
 async function getOne(id) {
   const result = await query('SELECT * FROM projects WHERE id = $1', [id]);
 
@@ -74,12 +108,21 @@ async function getOne(id) {
 }
 
 async function createNew(title, due, position, completed) {
-  const validationResult = validate(title, due, position, completed);
+  const validationResult1 = validateNew(title, due, position, completed);
 
-  if (validationResult.length > 0) {
+  if (validationResult1.length > 0) {
     return {
       success: false,
-      validation: validationResult,
+      validation: validationResult1,
+    };
+  }
+
+  const validationResult2 = validate(title, due, position, completed);
+
+  if (validationResult2.length > 0) {
+    return {
+      success: false,
+      validation: validationResult2,
     };
   }
 
@@ -90,7 +133,6 @@ async function createNew(title, due, position, completed) {
   return {
     newProject,
     success: true,
-    validation: validationResult,
   };
 }
 
