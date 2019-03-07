@@ -47,7 +47,7 @@ async function createRoute(req, res) {
     return res.status(400).json(result.validation);
   }
 
-  return res.status(200).json(result);
+  return res.status(200).json(result.newProject.rows);
 }
 
 async function patchRoute(req, res) {

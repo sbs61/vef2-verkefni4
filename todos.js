@@ -28,6 +28,13 @@ function isEmpty(s) {
 function validate(title, due, position, completed) {
   const errors = [];
 
+  if (isEmpty(title)) {
+    errors.push({
+      field: 'title',
+      error: 'Verður að skilgreina title',
+    });
+  }
+
   if (!isEmpty(title)) {
     if (typeof title !== 'string' || title.length === 0) {
       errors.push({
@@ -68,49 +75,6 @@ function validate(title, due, position, completed) {
 }
 
 /**
- * Another validation method that is used when creating a new project.
- * Check if all variables are defined in the post body.
- *
- * @param {string} title title of the project that needs to be validated
- * @param {string} due date of project
- * @param {number} position position of project
- * @param {boolean} completed completion status of project
- */
-function validateNew(title, due, position, completed) {
-  const errors = [];
-
-  if (isEmpty(title)) {
-    errors.push({
-      field: 'title',
-      error: 'Verður að skilgreina title',
-    });
-  }
-
-  if (isEmpty(due)) {
-    errors.push({
-      field: 'due',
-      error: 'Verður að skilgreina dagsetningu',
-    });
-  }
-
-  if (isEmpty(position)) {
-    errors.push({
-      field: 'position',
-      error: 'Verður að skilgreina staðsetningu',
-    });
-  }
-
-  if (isEmpty(completed)) {
-    errors.push({
-      field: 'completed',
-      error: 'Verður að skilgreina stöðu',
-    });
-  }
-
-  return errors;
-}
-
-/**
  * Returns a project with a certain id
  *
  * @param {number} id Id of project to get
@@ -137,27 +101,24 @@ async function getOne(id) {
  * @param {boolean} completed is the project completed or not
  */
 async function createNew(title, due, position, completed) {
-  const validationResult1 = validateNew(title, due, position, completed);
+  const validationResult = validate(title, due, position, completed);
 
-  if (validationResult1.length > 0) {
+  if (validationResult.length > 0) {
     return {
       success: false,
-      validation: validationResult1,
+      validation: validationResult,
     };
   }
 
-  const validationResult2 = validate(title, due, position, completed);
-
-  if (validationResult2.length > 0) {
-    return {
-      success: false,
-      validation: validationResult2,
-    };
+  if (completed === undefined) {
+    const values = [title, due, position];
+    await query('INSERT INTO projects(title, due, position) VALUES($1, $2, $3)', values);
+  } else {
+    const values = [title, due, position, completed];
+    await query('INSERT INTO projects(title, due, position, completed) VALUES($1, $2, $3, $4)', values);
   }
 
-  const values = [title, due, position, completed];
-
-  const newProject = await query('INSERT INTO projects(title, due, position, completed) VALUES($1, $2, $3, $4)', values);
+  const newProject = await query('SELECT * FROM projects ORDER BY id DESC LIMIT 1');
 
   return {
     newProject,

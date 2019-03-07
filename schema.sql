@@ -3,7 +3,7 @@ CREATE TABLE projects (
   title varchar(128) not null,
   due timestamp with time zone,
   position integer default 0,
-  completed boolean,
+  completed boolean dfeault false,
   created timestamp with time zone not null default current_timestamp,
   updated timestamp with time zone not null  default current_timestamp
 );
