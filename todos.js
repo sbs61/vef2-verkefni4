@@ -186,7 +186,7 @@ async function update(id, item) {
     .map((column, i) => `${column} = $${i + 2}`);
 
   console.log(`updates: ${updates}`);
-  console.log(updatedColumnsQuery); 
+  console.log(updatedColumnsQuery);
 
   const q = `
     UPDATE projects
