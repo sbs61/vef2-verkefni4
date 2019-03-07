@@ -181,7 +181,7 @@ async function update(id, item) {
     !isEmpty(item.completed) ? 'completed' : null,
   ].filter(Boolean);
 
-  console.log('dálkar: ' + changedColumns);
+  console.log(`dálkar: ${changedColumns}`);
 
 
   const changedValues = [
@@ -191,7 +191,7 @@ async function update(id, item) {
     !isEmpty(item.completed) ? xss(item.completed) : null,
   ].filter(Boolean);
 
-  console.log('values ' + changedValues);
+  console.log(`values ${changedValues}`);
 
   const updates = [id, ...changedValues];
 
@@ -217,14 +217,15 @@ async function update(id, item) {
     );
   }
 
-  const q = `
+  if (updatedColumnsQuery.length > 0) {
+    await query(`
     UPDATE projects
     SET ${updatedColumnsQuery.join(', ')}
     WHERE id = $1
-    RETURNING id, title, due, position, completed, created, updated`;
+    RETURNING id, title, due, position, completed, created, updated`, updates);
+  }
 
-  const updateResult = await query(q, updates);
-  console.log(updateResult);
+  const updateResult = await query('SELECT * FROM projects WHERE id = $1', [id]);
   return {
     success: true,
     item: updateResult.rows[0],
