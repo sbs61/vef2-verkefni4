@@ -25,3 +25,10 @@ INSERT INTO projects(title, due, position, completed) VALUES (
     4,
     false
 );
+
+INSERT INTO projects(title, due, position, completed) VALUES (
+    'Skila verkefni 4',
+    '2019-03-08 23:59:59',
+    5,
+    false
+);
