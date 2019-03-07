@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 /* todo útfæra virkni */
 const xss = require('xss');
 const validator = require('validator');
