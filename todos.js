@@ -1,9 +1,14 @@
-/* eslint-disable import/no-extraneous-dependencies */
 /* todo útfæra virkni */
 const xss = require('xss');
 const validator = require('validator');
 const { query } = require('./db');
 
+/**
+ * Get a list of all projects in the database and sort them approprietly.
+ *
+ * @param {string} order Order of projects, either ascending or descending order
+ * @param {boolean} completed completion status of the project.
+ */
 async function list(order, completed) {
   if (completed !== undefined) {
     const result = await query(`SELECT * FROM projects WHERE completed=${completed} ORDER BY ${order}`);
@@ -31,7 +36,7 @@ function validate(title, due, position, completed) {
   }
 
   if (!isEmpty(due)) {
-    if (!validator.isISO8601(due) && due.length !== 0) {
+    if (!validator.isISO8601(due)) {
       errors.push({
         field: 'due',
         error: 'Dagsetning verður að vera gild ISO 8601 dagsetning',
@@ -60,6 +65,15 @@ function validate(title, due, position, completed) {
   return errors;
 }
 
+/**
+ * Another validation method that is used when creating a new project.
+ * Check if all variables are defined in the post body.
+ *
+ * @param {string} title title of the project that needs to be validated
+ * @param {string} due date of project
+ * @param {number} position position of project
+ * @param {boolean} completed completion status of project
+ */
 function validateNew(title, due, position, completed) {
   const errors = [];
 
@@ -94,6 +108,11 @@ function validateNew(title, due, position, completed) {
   return errors;
 }
 
+/**
+ * Returns a project with a certain id
+ *
+ * @param {number} id Id of project to get
+ */
 async function getOne(id) {
   const result = await query('SELECT * FROM projects WHERE id = $1', [id]);
 
@@ -107,6 +126,14 @@ async function getOne(id) {
   return result.rows;
 }
 
+/**
+ * Creates a new project and adds it to the database.
+ *
+ * @param {string} title title of project
+ * @param {string} due due date of project
+ * @param {number} position position of project
+ * @param {boolean} completed is the project completed or not
+ */
 async function createNew(title, due, position, completed) {
   const validationResult1 = validateNew(title, due, position, completed);
 
@@ -203,6 +230,11 @@ async function update(id, item) {
   };
 }
 
+/**
+ * Deletes project with given id from the database.
+ *
+ * @param {number} id Id of project that is to be deleted.
+ */
 async function deleteProject(id) {
   const check = await query('SELECT * FROM projects WHERE id = $1', [id]);
 

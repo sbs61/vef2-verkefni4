@@ -15,7 +15,7 @@ function catchErrors(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
 }
 
-/* todo útfæra vefþjónustuskil */
+
 async function listRoute(req, res) {
   const desc = req.query.order === 'desc';
   const order = desc ? 'id desc' : 'id asc';
