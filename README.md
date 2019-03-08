@@ -1,3 +1,24 @@
+# Athugasemdir
+
+Notaður var npm validator í lausninni til að staðfesta dagsetningu á ISO8601 formi og einnig til að staðfesta INT og Boolean breytur.
+Þessi validator tekur einungis inn streng svo hvert gildi þarf að fara inn sem strengur i gegnum json-ið með patch og post en er þó sett 
+inn í gagnagrunninn á réttan hátt. 
+   
+T.d. "position": "1" 
+   
+Til að fjarlægja gildi úr gagnagrunninum í gegnum PATCH er því sendur tómur strengur, þá sendist gildið NULL í gagnagrunn.
+T.d. "due": "" í json body skilar "due": NULL í gagnagrunn.
+
+# Keyrsla
+npm install  
+
+stilla .env
+  
+node setup.js
+  
+npm start
+ 
+
 # Verkefni 4
 
 Verkefni 4 snýst um að útfæra vefþjónustu fyrir verkefnalista.
