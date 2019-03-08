@@ -214,7 +214,7 @@ async function update(id, item) {
   if (item.position === '') {
     await query(
       `UPDATE projects
-    SET position = NULL
+    SET position = NULL, updated = current_timestamp
     WHERE id = $1`, [id],
     );
   }
@@ -223,7 +223,7 @@ async function update(id, item) {
   if (item.due === '') {
     await query(
       `UPDATE projects
-    SET due = NULL
+    SET due = NULL, updated = current_timestamp
     WHERE id = $1`, [id],
     );
   }
@@ -232,7 +232,7 @@ async function update(id, item) {
   if (updatedColumnsQuery.length > 0) {
     await query(`
     UPDATE projects
-    SET ${updatedColumnsQuery.join(', ')}
+    SET ${updatedColumnsQuery.join(', ')}, updated = current_timestamp
     WHERE id = $1
     RETURNING id, title, due, position, completed, created, updated`, updates);
   }
